@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Music Player Demo</title>
+  <link rel="stylesheet" href="music-player.css">
+</head>
+<body>
+  <h1>Music Player Demo</h1>
+  
+  <script src="songs-config.js"></script>
+  <script src="music-player.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      new MusicPlayer({ songs: songsConfig });
+    });
+  </script>
+</body>
+</html>
