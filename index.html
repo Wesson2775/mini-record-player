@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini Record Player</title>
+</head>
+<body>
+    <!-- 播放器将动态插入到 body 中 -->
+    <script defer src="https://cdn.jsdelivr.net/gh/wesson2775/mini-record-player@main/mini-record-player.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            MiniRecordPlayer.init({
+                position: 'bottom-left',
+                autoPlay: false,
+                defaultVolume: 0.8,
+                debug: true
+            }, [
+                {
+                    title: "Sample Song",
+                    artist: "Sample Artist",
+                    cover: "https://via.placeholder.com/30",
+                    src: "path/to/song.mp3"
+                }
+            ]);
+        });
+    </script>
+</body>
+</html>
