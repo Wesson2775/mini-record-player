@@ -1,18 +1,27 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-  <title>Music Player Demo</title>
+  <title>mini-record-player Demo</title>
   <link rel="stylesheet" href="music-player.css">
 </head>
+
 <body>
-  <h1>Music Player Demo</h1>
-  
-  <script src="songs-config.js"></script>
-  <script src="music-player.js"></script>
+  <div id="player-container"></div>
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      new MusicPlayer({ songs: songsConfig });
+    MiniRecordPlayer({
+      container: document.getElementById('player-container'),
+      songs: [
+        {
+          title: "Song Title",
+          artist: "Artist Name",
+          cover: "https://example.com/cover.jpg",
+          src: "https://example.com/song.mp3"
+        }
+        // Add more songs
+      ]
     });
   </script>
 </body>
+
 </html>
