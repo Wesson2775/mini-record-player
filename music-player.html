@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>迷你唱片机</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #222;
+            color: #eee;
+        }
+
+        .record-player {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            display: flex;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(43, 43, 43, 0.5);
+            border-radius: 25px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .record-player.collapsed {
+            border-radius: 25px 0 0 25px;
+        }
+
+        .recorderbackground {
+            width: 59px;
+            height: 44px;
+            background: radial-gradient(circle, rgb(122, 122, 122), #5e5e5e 100%);
+            border-radius: 22px 0 0 22px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            cursor: pointer;
+            position: relative;
+            box-shadow: inset 0 0 10px rgba(77, 136, 202, 0.7), 0 0 5px rgba(158, 190, 41, 0.3);
+            z-index: 1001;
+        }
+
+        .record {
+            width: 40px;
+            height: 40px;
+            background: radial-gradient(circle, #222 0%, #111 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            border: 2px solid #424242;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.7), 0 0 5px rgba(0, 0, 0, 0.3);
+            z-index: 1001;
+            will-change: transform;
+        }
+
+        .record-cover {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            object-fit: cover;
+            position: absolute;
+            z-index: 1000;
+        }
+
+        .record-grooves::before {
+            content: '';
+            position: absolute;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: repeating-radial-gradient(circle, transparent 0px, rgba(255, 255, 255, 0.05) 1px, transparent 2px);
+            z-index: 999;
+        }
+
+        .record.playing {
+            animation: spin 2s linear infinite;
+        }
+
+        .tonearm {
+            position: absolute;
+            width: 20px;
+            height: 2px;
+            background: linear-gradient(to right, #1937bd, #78bcd1);
+            top: 33px;
+            left: 50px;
+            transform-origin: left center;
+            transform: rotate(-90deg);
+            transition: transform 0.3s ease-in-out 0.1s;
+            z-index: 1003;
+            border-radius: 2px;
+            box-shadow: 0 1px 2px rgba(75, 74, 74, 0.5);
+        }
+
+        .tonearm.playing {
+            transform: rotate(-125deg);
+        }
+
+        .tonearm::before {
+            content: '';
+            position: absolute;
+            left: -5px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 6px;
+            height: 6px;
+            background: #c0bfbf;
+            border-radius: 50%;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .tonearm::after {
+            content: '';
+            position: absolute;
+            right: -8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 8px;
+            height: 5px;
+            background: #ff1919;
+            border-radius: 2px;
+            box-shadow: 0 1px 2px rgba(248, 20, 20, 0.5);
+        }
+
+        .tonearm-needle {
+            position: absolute;
+            right: -2px;
+            bottom: -4px;
+            width: 2px;
+            height: 6px;
+            background: #ccc;
+            transform: rotate(45deg);
+        }
+
+        .control-panel {
+            width: 160px;
+            height: 44px;
+            background-color: #2a2a2a;
+            display: flex;
+            flex-direction: column;
+            transition: width 0.3s ease, opacity 0.3s ease;
+            overflow: hidden;
+            position: relative;
+            z-index: 1001;
+        }
+
+        .record-player.collapsed .control-panel {
+            width: 0;
+            opacity: 0;
+        }
+
+        .song-info {
+            height: 22px;
+            background-color: #3a5499;
+            display: flex;
+            align-items: center;
+            font-size: 10px;
+            white-space: nowrap;
+            overflow: hidden;
+            padding: 0 5px;
+        }
+
+        .controls {
+            height: 22px;
+            display: flex;
+            align-items: center;
+            background-color: #dd4848;
+            gap: 8px;
+            padding: 0 5px;
+            overflow: hidden;
+        }
+
+        .song-text {
+            color: #ddd;
+            white-space: nowrap;
+        }
+
+        .song-text.marquee {
+            animation: marquee 10s linear infinite;
+            padding-right: 20px;
+            display: inline-block;
+        }
+
+        .song-text.marquee:hover {
+            animation-play-state: paused;
+        }
+
+        .next-song {
+            flex: 1;
+            overflow: hidden;
+            font-size: 10px;
+            white-space: nowrap;
+        }
+
+        .control-btn {
+            background: none;
+            border: none;
+            color: #ccc;
+            cursor: pointer;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+        }
+
+        .control-btn:hover {
+            color: #fff;
+        }
+
+        .volume-container {
+            display: flex;
+            align-items: center;
+            margin-left: auto;
+        }
+
+        .volume-icon {
+            font-size: 10px;
+            color: #ccc;
+        }
+
+        .volume-slider {
+            width: 40px;
+            height: 3px;
+            -webkit-appearance: none;
+            background: #444;
+            outline: none;
+            border-radius: 2px;
+        }
+
+        .volume-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 8px;
+            height: 8px;
+            background: #ccc;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .playlist-btn {
+            font-size: 10px;
+            color: #ccc;
+        }
+
+        .playlist {
+            display: none;
+            width: 160px;
+            height: 44px;
+            background-color: #343b47;
+            overflow-y: auto;
+            z-index: 1002;
+        }
+
+        .playlist.open {
+            display: block;
+        }
+
+        .playlist::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .playlist::-webkit-scrollbar-track {
+            background: #333;
+        }
+
+        .playlist::-webkit-scrollbar-thumb {
+            background: #555;
+            border-radius: 2px;
+        }
+
+        .playlist::-webkit-scrollbar-thumb:hover {
+            background: #777;
+        }
+
+        .playlist-item {
+            padding: 5px 10px;
+            font-size: 10px;
+            color: #ccc;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #333;
+            height: 22px;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+
+        .playlist-item:last-child {
+            border-bottom: none;
+        }
+
+        .playlist-item:hover {
+            background-color: #3d4a63;
+            color: #fff;
+        }
+
+        .playlist-item .song-text {
+            width: 100%;
+        }
+
+        .playlist-item:hover .song-text.marquee {
+            animation: marquee 10s linear infinite;
+            padding-right: 20px;
+            display: inline-block;
+        }
+
+        .playlist-item .song-text {
+            transition: transform 0.3s ease;
+        }
+
+        .playlist-item:not(:hover) .song-text.marquee {
+            animation: none;
+            transform: translateX(0);
+        }
+
+        .playlist-mode .song-info,
+        .playlist-mode .controls {
+            display: none;
+        }
+
+        .playlist-mode .playlist {
+            display: block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+        }
+    </style>
+</head>
+<body>
+    <div class="record-player collapsed">
+        <div class="recorderbackground">
+            <div class="record" id="record-toggle">
+                <img class="record-cover" id="record-cover" src="https://via.placeholder.com/30" alt="Cover">
+                <div class="record-grooves"></div>
+            </div>
+            <div class="tonearm" id="tonearm">
+                <div class="tonearm-needle"></div>
+            </div>
+        </div>
+        <div class="control-panel" id="control-panel">
+            <div class="song-info">
+                <span class="song-text">未知歌曲 - 未知艺术家</span>
+            </div>
+            <div class="controls">
+                <button class="control-btn" title="上一曲">⏮</button>
+                <button class="control-btn play-btn" title="播放/暂停">⏵</button>
+                <button class="control-btn" title="下一曲">⏭</button>
+                <div class="volume-container">
+                    <span class="volume-icon">🔊</span>
+                    <input type="range" class="volume-slider" min="0" max="100" value="80">
+                </div>
+                <button class="control-btn playlist-btn" title="播放列表" id="playlist-toggle">≡</button>
+            </div>
+            <div class="playlist" id="playlist">
+                <!-- Playlist items will be dynamically added -->
+            </div>
+        </div>
+    </div>
+    <audio id="audio-player" style="display: none;"></audio>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const recordToggle = document.getElementById('record-toggle');
+            const controlPanel = document.getElementById('control-panel');
+            const playBtn = document.querySelector('.play-btn');
+            const volumeSlider = document.querySelector('.volume-slider');
+            const playlistToggle = document.getElementById('playlist-toggle');
+            const playlist = document.getElementById('playlist');
+            const recordCover = document.getElementById('record-cover');
+            const tonearm = document.getElementById('tonearm');
+            const recordPlayer = document.querySelector('.record-player');
+            const audioPlayer = document.getElementById('audio-player');
+            
+            let isPlaying = false;
+            let isCollapsed = true;
+            let isPlaylistOpen = false;
+
+            const songs = [
+            {
+                    title: "it's 6pm but I miss u already",
+                    artist: "BlueLee,Furyl,Siren",
+                    cover: "http://p1.music.126.net/vfArwmf4yUKmZhi-ZCwOXA==/109951166569406479.jpg?param=130y130",
+                    src: "http://music.163.com/song/media/outer/url?id=1890756154.mp3"
+                },
+                    const musicList = [
+                {
+                    title: "剑心",
+                    artist: "张杰",
+                    cover: "http://p1.music.126.net/lRZ9Jnhb1VaD9v_5YrJB0g==/109951165625474238.jpg",
+                    src: ""  // 原数据中未包含音频链接，这里留空，你可根据实际补充
+                },
+                {
+                    title: "野风",
+                    artist: "林忆莲",
+                    cover: "http://p1.music.126.net/_HGfJRNerJD4aPiNN_8wGQ==/109951170216165810.jpg",
+                    src: ""
+                },
+                {
+                    title: "江湖笑",
+                    artist: "小虫/周华健/黄晓明/胡军/张纪中",
+                    cover: "http://p1.music.126.net/NeHoyoPAUceh7A-ME2jQvA==/109951165774497359.jpg",
+                    src: ""
+                },
+                {
+                    title: "天下无双",
+                    artist: "张芯",
+                    cover: "http://p1.music.126.net/Wv73TTw5-qOBr7FSU6rr_Q==/97856534886236.jpg",
+                    src: ""
+                },
+                {
+                    title: "剑魂",
+                    artist: "李炜",
+                    cover: "http://p1.music.126.net/qSxyXrnXiPNVQ8YJD2XejA==/18720284976235092.jpg",
+                    src: ""
+                },
+                {
+                    title: "问情诗",
+                    artist: "张智尧/许慧欣",
+                    cover: "http://p1.music.126.net/CeCVM7oxMWbRGJNwENffKQ==/5758142394718583.jpg",
+                    src: ""
+                },
+                {
+                    title: "相思曲",
+                    artist: "汪妤凌",
+                    cover: "http://p1.music.126.net/ADT2M-AAXelJZ4AjJtVrSQ==/8940129045555308.jpg",
+                    src: ""
+                },
+                {
+                    title: "浓情淡如你",
+                    artist: "周深",
+                    cover: "http://p1.music.126.net/cFbvrumJ6C4W5BNRvQJPuw==/18957779486268492.jpg",
+                    src: ""
+                },
+                {
+                    title: "诀别诗",
+                    artist: "胡彦斌",
+                    cover: "http://p1.music.126.net/npzhsfVJFsNz6IJo3a7-Fg==/45079976754696.jpg",
+                    src: ""
+                },
+                {
+                    title: "乱世桃花",
+                    artist: "林子祥/叶蒨文",
+                    cover: "http://p1.music.126.net/Qmg7uI7_Bkuiyyaq4v0ikw==/111050674423375.jpg",
+                    src: ""
+                },
+                {
+                    title: "男儿当自强",
+                    artist: "林子祥",
+                    cover: "http://p1.music.126.net/_xTCslrcm845vMHpMCikeg==/109951165628215417.jpg",
+                    src: ""
+                },
+                {
+                    title: "男儿当自强 (主题音乐)",
+                    artist: "黄霑",
+                    cover: "http://p1.music.126.net/N7e6KyglC8zlyA877aer-g==/61572651167692.jpg",
+                    src: ""
+                },
+                {
+                    title: "黄种人",
+                    artist: "谢霆锋",
+                    cover: "http://p1.music.126.net/yHzOCmOV18YtG8bn2hCs3Q==/109951164811421327.jpg",
+                    src: ""
+                },
+                {
+                    title: "天下第一",
+                    artist: "麦振鸿/罗坚",
+                    cover: "http://p1.music.126.net/k318_HbBXJEYcNN6o86J0g==/7733964789776935.jpg",
+                    src: ""
+                },
+                {
+                    title: "你的第一",
+                    artist: "霍建华",
+                    cover: "http://p1.music.126.net/riDGcEVoAN7lYgBGs6pc3w==/118747255817041.jpg",
+                    src: ""
+                },
+                {
+                    title: "十面埋伏 (Ambush From All Sides)",
+                    artist: "黄英华/香港中乐团",
+                    cover: "http://p1.music.126.net/5MY9gveV4jubroSZlwpkVA==/47279000006629.jpg",
+                    src: ""
+                },
+                {
+                    title: "佳人曲",
+                    artist: "章子怡",
+                    cover: "http://p1.music.126.net/X9XOuqVyRp27Wsz7DATfsQ==/109951165961570077.jpg",
+                    src: ""
+                },
+                {
+                    title: "十面埋伏 (琵琶独奏)",
+                    artist: "华夏民族乐团",
+                    cover: "http://p1.music.126.net/OHc8accTxELDlLYq9oTSCg==/109951163815940485.jpg",
+                    src: ""
+                },
+                {
+                    title: "怪侠一枝梅",
+                    artist: "武聆音雄",
+                    cover: "http://p1.music.126.net/Dol5dVN2WI3u_iWpGKA3-Q==/2543170398067202.jpg",
+                    src: ""
+                },
+                {
+                    title: "赤子心",
+                    artist: "李琦",
+                    cover: "http://p1.music.126.net/IcWhMUWpJfILs-BROjeADQ==/109951163928996927.jpg",
+                    src: ""
+                }
+            ];
+            
+            let currentSongIndex = 0;
+
+            // Initialize audio player
+            audioPlayer.src = songs[currentSongIndex].src;
+            audioPlayer.volume = volumeSlider.value / 100;
+
+            // Check if text overflows and apply marquee
+            function applyMarquee(element) {
+                const parentWidth = element.offsetWidth;
+                const text = element.querySelector('.song-text');
+
+                function checkOverflow(el) {
+                    if (!el) return false;
+                    const tempSpan = document.createElement('span');
+                    tempSpan.style.visibility = 'hidden';
+                    tempSpan.style.position = 'absolute';
+                    tempSpan.style.whiteSpace = 'nowrap';
+                    tempSpan.style.fontSize = getComputedStyle(el).fontSize;
+                    tempSpan.textContent = el.textContent;
+                    document.body.appendChild(tempSpan);
+                    const textWidth = tempSpan.offsetWidth;
+                    document.body.removeChild(tempSpan);
+                    return textWidth > parentWidth / 2;
+                }
+
+                if (checkOverflow(text)) {
+                    text.classList.add('marquee');
+                } else {
+                    text.classList.remove('marquee');
+                }
+            }
+
+            // Initialize playlist
+            function initializePlaylist() {
+                playlist.innerHTML = '';
+                songs.forEach((song, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'playlist-item';
+                    item.innerHTML = `
+                        <span class="song-text">${song.title} - ${song.artist}</span>
+                    `;
+                    applyMarquee(item);
+                    item.addEventListener('click', () => {
+                        currentSongIndex = index;
+                        updateSongInfo();
+                        isPlaying = true;
+                        playBtn.textContent = '⏸';
+                        tonearm.classList.add('playing');
+                        audioPlayer.src = songs[currentSongIndex].src;
+                        setTimeout(() => {
+                            recordToggle.classList.add('playing');
+                            audioPlayer.play();
+                        }, 300); // 0.3s delay for playback and cover animation
+                        togglePlaylist();
+                    });
+                    playlist.appendChild(item);
+                });
+            }
+
+            // Update song information
+            function updateSongInfo() {
+                const song = songs[currentSongIndex];
+                const songInfo = document.querySelector('.song-info');
+                songInfo.innerHTML = `
+                    <span class="song-text">${song.title} - ${song.artist}</span>
+                `;
+                applyMarquee(songInfo);
+                recordCover.src = song.cover;
+            }
+
+            // Update playlist view
+            function updatePlaylistView() {
+                if (isPlaylistOpen) {
+                    controlPanel.classList.add('playlist-mode');
+                } else {
+                    controlPanel.classList.remove('playlist-mode');
+                    // Restore controls
+                    document.querySelector('.controls').innerHTML = `
+                        <button class="control-btn" title="上一曲">⏮</button>
+                        <button class="control-btn play-btn" title="播放/暂停">${isPlaying ? '⏸' : '⏵'}</button>
+                        <button class="control-btn" title="下一曲">⏭</button>
+                        <div class="volume-container">
+                            <span class="volume-icon">🔊</span>
+                            <input type="range" class="volume-slider" min="0" max="100" value="${volumeSlider.value}">
+                        </div>
+                        <button class="control-btn playlist-btn" title="播放列表" id="playlist-toggle">≡</button>
+                    `;
+                    // Reattach event listeners
+                    document.querySelector('.play-btn').addEventListener('click', togglePlay);
+                    document.querySelectorAll('.control-btn').forEach(btn => {
+                        if (btn.textContent === '⏮') {
+                            btn.addEventListener('click', previousSong);
+                        } else if (btn.textContent === '⏭') {
+                            btn.addEventListener('click', nextSong);
+                        }
+                    });
+                    document.getElementById('playlist-toggle').addEventListener('click', togglePlaylist);
+                    document.querySelector('.volume-slider').addEventListener('input', handleVolume);
+                    updateSongInfo();
+                }
+            }
+
+            // Toggle playlist visibility
+            function togglePlaylist() {
+                isPlaylistOpen = !isPlaylistOpen;
+                playlist.classList.toggle('open', isPlaylistOpen);
+                updatePlaylistView();
+            }
+
+            // Play/pause toggle
+            function togglePlay() {
+                isPlaying = !isPlaying;
+                playBtn.textContent = isPlaying ? '⏸' : '⏵';
+                if (isPlaying) {
+                    tonearm.classList.add('playing');
+                    setTimeout(() => {
+                        recordToggle.classList.add('playing');
+                        audioPlayer.play();
+                    }, 300); // 0.3s delay for playback and cover animation
+                } else {
+                    recordToggle.classList.remove('playing');
+                    tonearm.classList.remove('playing');
+                    audioPlayer.pause();
+                }
+            }
+
+            // Previous song
+            function previousSong() {
+                currentSongIndex = (currentSongIndex - 1 + songs.length) % songs.length;
+                updateSongInfo();
+                isPlaying = true;
+                playBtn.textContent = '⏸';
+                tonearm.classList.add('playing');
+                audioPlayer.src = songs[currentSongIndex].src;
+                setTimeout(() => {
+                    recordToggle.classList.add('playing');
+                    audioPlayer.play();
+                }, 300); // 0.3s delay for playback and cover animation
+            }
+
+            // Next song
+            function nextSong() {
+                currentSongIndex = (currentSongIndex + 1) % songs.length;
+                updateSongInfo();
+                isPlaying = true;
+                playBtn.textContent = '⏸';
+                tonearm.classList.add('playing');
+                audioPlayer.src = songs[currentSongIndex].src;
+                setTimeout(() => {
+                    recordToggle.classList.add('playing');
+                    audioPlayer.play();
+                }, 300); // 0.3s delay for playback and cover animation
+            }
+
+            // Volume control
+            function handleVolume() {
+                audioPlayer.volume = this.value / 100;
+            }
+
+            // Auto-play next song when current song ends
+            audioPlayer.addEventListener('ended', function() {
+                nextSong();
+            });
+
+            // Toggle record player expand/collapse
+            function toggleCollapse() {
+                isCollapsed = !isCollapsed;
+                recordPlayer.classList.toggle('collapsed', isCollapsed);
+                
+                if (isCollapsed) {
+                    if (isPlaylistOpen) togglePlaylist();
+                    if (isPlaying) {
+                        tonearm.classList.add('playing');
+                        setTimeout(() => recordToggle.classList.add('playing'), 300);
+                    }
+                } else {
+                    if (isPlaying) {
+                        tonearm.classList.add('playing');
+                        setTimeout(() => recordToggle.classList.add('playing'), 300);
+                    }
+                }
+            }
+
+            // Ensure record toggle click works
+            recordToggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                toggleCollapse();
+            });
+
+            // Click outside to collapse
+            document.addEventListener('click', function(e) {
+                if (!recordPlayer.contains(e.target) && !isCollapsed && e.target !== recordToggle) {
+                    toggleCollapse();
+                }
+            });
+
+            // Prevent clicks inside record player from collapsing
+            recordPlayer.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+
+            // Play/pause button
+            playBtn.addEventListener('click', togglePlay);
+
+            // Volume control
+            volumeSlider.addEventListener('input', handleVolume);
+
+            // Previous/next buttons
+            document.querySelectorAll('.control-btn').forEach(btn => {
+                if (btn.textContent === '⏮') {
+                    btn.addEventListener('click', previousSong);
+                } else if (btn.textContent === '⏭') {
+                    btn.addEventListener('click', nextSong);
+                }
+            });
+
+            // Playlist toggle
+            playlistToggle.addEventListener('click', togglePlaylist);
+
+            // Initialize
+            initializePlaylist();
+            updateSongInfo();
+        });
+    </script>
+</body>
+</html>
