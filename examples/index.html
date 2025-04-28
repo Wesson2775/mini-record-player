@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini Record Player Demo</title>
+</head>
+<body>
+    <h1>Mini Record Player Demo</h1>
+    <p>Below is the embedded Mini Record Player plugin.</p>
+    <div id="player-container"></div>
+    <script src="https://raw.githubusercontent.com/wesson2775/mini-record-player/main/dist/mini-record-player.js"></script>
+    <script>
+        MiniRecordPlayer({
+            container: document.getElementById('player-container'),
+            songs: [
+                {
+                    title: "it's 6pm but I miss u already",
+                    artist: "BlueLee,Furyl,Siren",
+                    cover: "http://p1.music.126.net/vfArwmf4yUKmZhi-ZCwOXA==/109951166569406479.jpg?param=130y130",
+                    src: "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Podington_Bear/Solo_Instruments/Podington_Bear_-_Gentle_Breeze.mp3"
+                },
+                {
+                    title: "Gentle Breeze",
+                    artist: "Podington Bear",
+                    cover: "https://via.placeholder.com/30/333?text=Gentle+Breeze",
+                    src: "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Podington_Bear/Solo_Instruments/Podington_Bear_-_Gentle_Breeze.mp3"
+                },
+                {
+                    title: "Custom Song",
+                    artist: "Custom Artist",
+                    cover: "https://via.placeholder.com/30/333?text=Custom+Song",
+                    src: "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Podington_Bear/Solo_Instruments/Podington_Bear_-_Soft_Echoes.mp3"
+                }
+            ],
+            volume: 0.6,
+            theme: {
+                background: '#1a1a1a',
+                songInfoBg: '#2a3a79',
+                controlsBg: '#bd3838',
+                playlistBg: '#242b37'
+            }
+        });
+    </script>
+</body>
+</html>
