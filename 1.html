@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>测试唱片机</title>
+    <!-- 使用 jsDelivr CDN 加速 -->
+    <script src="https://cdn.jsdelivr.net/gh/wesson2775/mini-record-player@main/mini-record-player.js"></script>
+    <style>
+        /* 可选：覆盖默认样式 */
+        .record-player {
+            --primary-color: #ff4757; /* 修改主色调 */
+        }
+    </style>
+</head>
+<body>
+    <h1>我的网站内容</h1>
+
+    <script>
+        // 安全初始化函数
+        function initPlayer() {
+            if (window.MiniRecordPlayer) {
+                const songs = [
+                    {
+                        title: "示例歌曲1",
+                        artist: "艺术家1",
+                        cover: "https://via.placeholder.com/150",
+                        src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" 
+                    },
+                    {
+                        title: "示例歌曲2",
+                        artist: "艺术家2", 
+                        cover: "https://via.placeholder.com/150",
+                        src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"
+                    }
+                ];
+
+                MiniRecordPlayer.init({
+                    position: 'bottom-right',
+                    autoPlay: true,
+                    defaultVolume: 0.6
+                }, songs);
+            } else {
+                console.error("插件未加载！请检查：\n1. 脚本路径是否正确\n2. 浏览器控制台是否有404错误");
+            }
+        }
+
+        // 确保DOM和脚本加载完成后执行
+        if (document.readyState === 'complete') {
+            initPlayer();
+        } else {
+            window.addEventListener('load', initPlayer);
+        }
+    </script>
+</body>
+</html>
