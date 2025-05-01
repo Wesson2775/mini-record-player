@@ -123,10 +123,10 @@
             width: 20px;
             height: 2px;
             background: linear-gradient(to right, #1937bd, #78bcd1);
-            top: 33px;
+            top: 10px;
             left: 44px;
             transform-origin: left center;
-            transform: rotate(-90deg);
+            transform: rotate(90deg);
             transition: transform 0.3s ease-in-out 0.1s;
             z-index: 1003;
             border-radius: 2px;
@@ -134,7 +134,7 @@
         }
 
         .tonearm.playing {
-            transform: rotate(-115deg);
+            transform: rotate(119deg);
         }
 
         .tonearm::before {
@@ -166,11 +166,11 @@
         .tonearm-needle {
             position: absolute;
             right: -2px;
-            bottom: -4px;
+            bottom: 0px;
             width: 2px;
             height: 6px;
             background: #ccc;
-            transform: rotate(45deg);
+            transform: rotate(135deg);
         }
 
         .control-panel {
