@@ -73,7 +73,7 @@
         }
 
         .recorderbackground {
-            width: 59px;
+            width: 50px;
             height: 44px;
             background: radial-gradient(circle, rgb(122, 122, 122), #5e5e5e 100%);
             border-radius: 22px 0 0 22px;
@@ -131,7 +131,7 @@
             height: 2px;
             background: linear-gradient(to right, #1937bd, #78bcd1);
             top: 33px;
-            left: 50px;
+            left: 44px;
             transform-origin: left center;
             transform: rotate(-90deg);
             transition: transform 0.3s ease-in-out 0.1s;
@@ -141,7 +141,7 @@
         }
 
         .tonearm.playing {
-            transform: rotate(-125deg);
+            transform: rotate(-115deg);
         }
 
         .tonearm::before {
