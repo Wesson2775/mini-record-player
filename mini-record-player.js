@@ -46,13 +46,6 @@
         // 添加样式
         const style = document.createElement('style');
         style.textContent = `
-        body {
-            font-family: 'Arial', sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #222;
-            color: #eee;
-        }
 
         .record-player {
             position: fixed;
