@@ -16,6 +16,10 @@
         const recordPlayerHTML = `
         <div class="record-player collapsed" id="mini-record-player">
             <div class="recorderbackground">
+                <svg class="progress-bar" width="44" height="44">
+                    <path class="progress-background" d="M 22 44 A 22 22 0 0 1 22 0"></path>
+                    <path class="progress-fill" d="M 22 44 A 22 22 0 0 1 22 0"></path>
+                </svg>
                 <div class="record" id="record-toggle">
                     <img class="record-cover" id="record-cover" src="https://via.placeholder.com/30" alt="Cover">
                     <div class="record-grooves"></div>
@@ -46,10 +50,9 @@
         // 添加样式
         const style = document.createElement('style');
         style.textContent = `
-
         .record-player {
             position: fixed;
-            bottom: 20px;
+            bottom: 70px;
             left: ${config.position.includes('left') ? '20px' : 'auto'};
             right: ${config.position.includes('right') ? '20px' : 'auto'};
             display: flex;
@@ -93,6 +96,7 @@
             box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.7), 0 0 5px rgba(0, 0, 0, 0.3);
             z-index: 1001;
             will-change: transform;
+            margin-left: 2px;
         }
 
         .record-cover {
@@ -118,13 +122,33 @@
             animation: spin 2s linear infinite;
         }
 
+        .progress-bar {
+            position: absolute;
+            z-index: 1000;
+        }
+
+        .progress-background {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.2);
+            stroke-width: 3;
+        }
+
+        .progress-fill {
+            fill: none;
+            stroke:rgb(179, 199, 0);
+            stroke-width: 3;
+            stroke-dasharray: 69.12;
+            stroke-dashoffset: 69.12;
+            transition: stroke-dashoffset 0.2s linear;
+        }
+
         .tonearm {
             position: absolute;
             width: 20px;
             height: 2px;
             background: linear-gradient(to right, #1937bd, #78bcd1);
             top: 10px;
-            left: 44px;
+            left: 46px;
             transform-origin: left center;
             transform: rotate(90deg);
             transition: transform 0.3s ease-in-out 0.1s;
@@ -394,6 +418,7 @@
         const tonearm = document.getElementById('tonearm');
         const recordPlayer = document.getElementById('mini-record-player');
         const audioPlayer = document.getElementById('audio-player');
+        const progressFill = document.querySelector('.progress-fill');
 
         let isPlaying = false;
         let isCollapsed = true;
@@ -581,15 +606,26 @@
 
         // 歌曲结束自动播放下一首
         audioPlayer.addEventListener('ended', function () {
-            if (config.autoPlay) {
-                nextSong();
-            } else {
-                isPlaying = false;
-                playBtn.textContent = '⏵';
-                recordToggle.classList.remove('playing');
-                tonearm.classList.remove('playing');
+            nextSong();
+        });
+
+        // 更新进度条
+        audioPlayer.addEventListener('timeupdate', function () {
+            if (audioPlayer.duration) {
+                const progress = audioPlayer.currentTime / audioPlayer.duration;
+                const arcLength = Math.PI * 22;
+                const offset = arcLength * (1 - progress);
+                progressFill.style.strokeDashoffset = offset;
             }
         });
+
+        // 重置进度条
+        function resetProgressBar() {
+            progressFill.style.strokeDashoffset = 69.12;
+        }
+
+        audioPlayer.addEventListener('pause', resetProgressBar);
+        audioPlayer.addEventListener('ended', resetProgressBar);
 
         // 切换展开/折叠
         function toggleCollapse() {
@@ -655,7 +691,6 @@
             createRecordPlayer(config, songs);
         },
 
-        // 可以添加更多方法，如添加歌曲、切换歌曲等
         addSongs: function (newSongs) {
             // 实现添加歌曲逻辑
         },
